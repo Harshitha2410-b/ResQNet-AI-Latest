@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Features | ResQNet AI</title>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">
+        <span class="logo-dot"></span> ResQNet AI
+    </a>
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('features') }}">Features</a>
+        <a href="{{ url_for('about') }}">About</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+    <a href="{{ url_for('register') }}" class="nav-cta">Start Monitoring</a>
+</nav>
+
+<section class="triggers">
+    <div class="section-title">
+        <p>CORE MODULES</p>
+        <h2>ResQNet AI Features</h2>
+    </div>
+
+    <div class="trigger-grid">
+        <div class="trigger-card">
+            <div class="trigger-icon">🎙</div>
+            <h3>Voice Detection</h3>
+            <p>Microphone audio analysis and supported browser speech recognition.</p>
+        </div>
+        <div class="trigger-card">
+            <div class="trigger-icon">📱</div>
+            <h3>Silent SOS</h3>
+            <p>Emergency activation workflow. Device-button integration is a separate requirement.</p>
+        </div>
+        <div class="trigger-card">
+            <div class="trigger-icon">⚡</div>
+            <h3>Fall Detection</h3>
+            <p>Requires compatible device motion sensors and validated detection logic.</p>
+        </div>
+    </div>
+
+    <div class="hero-buttons">
+        <a href="{{ url_for('register') }}" class="primary-btn">Launch System</a>
+        <a href="{{ url_for('home') }}" class="secondary-btn">Back Home</a>
+    </div>
+</section>
+
+</body>
+</html>

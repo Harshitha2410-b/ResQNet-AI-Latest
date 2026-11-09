@@ -1,0 +1,211 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>ResQNet AI</title>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">
+        <span class="logo-dot"></span>
+        <span>ResQNet AI</span>
+    </a>
+
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('features') }}">Features</a>
+        <a href="{{ url_for('about') }}">About</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+
+    <a href="{{ url_for('register') }}" class="nav-cta">
+        Start Monitoring
+    </a>
+</nav>
+
+<section class="hero">
+    <div class="hero-left">
+        <p class="badge">AI • SILENT EMERGENCY SYSTEM</p>
+
+        <h1>
+            Detect Danger
+            <span>Before</span>
+            Anyone Calls.
+        </h1>
+
+        <p class="hero-text">
+            ResQNet AI explores emergency detection using voice analysis,
+            silent SOS triggers and fall detection to support faster
+            emergency response.
+        </p>
+
+        <div class="hero-buttons">
+            <a href="{{ url_for('register') }}" class="primary-btn">
+                Launch System
+            </a>
+
+            <a href="{{ url_for('features') }}" class="secondary-btn">
+                Watch Demo
+            </a>
+        </div>
+    </div>
+
+    <div class="hero-right">
+        <div class="status-card">
+            <div class="pulse"></div>
+            <p class="live-tag">● DEMO</p>
+            <h3>AI Monitoring</h3>
+
+            <div class="status-row">
+                <span>Microphone</span>
+                <span class="online">Browser Supported</span>
+            </div>
+
+            <div class="status-row">
+                <span>GPS</span>
+                <span class="online">Permission Required</span>
+            </div>
+
+            <div class="status-row">
+                <span>Risk Level</span>
+                <span class="safe">NOT ASSESSED</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="triggers">
+    <div class="section-title">
+        <p>CORE AI MODULES</p>
+        <h2>3 Smart Emergency Triggers</h2>
+    </div>
+
+    <div class="trigger-grid">
+        <div class="trigger-card">
+            <div class="trigger-icon">🎙</div>
+            <h3>Voice Detection</h3>
+            <p>Audio analysis and supported speech recognition for potential distress signals.</p>
+        </div>
+
+        <div class="trigger-card">
+            <div class="trigger-icon">📱</div>
+            <h3>Silent SOS</h3>
+            <p>A discreet SOS workflow. Physical button detection requires device integration.</p>
+        </div>
+
+        <div class="trigger-card">
+            <div class="trigger-icon">⚡</div>
+            <h3>Fall Detection</h3>
+            <p>Motion-based fall detection requires compatible device sensors.</p>
+        </div>
+    </div>
+</section>
+
+<section class="live-status">
+    <div class="status-box">
+        <h2>24/7</h2>
+        <p>Target Monitoring</p>
+    </div>
+
+    <div class="status-box">
+        <h2>3</h2>
+        <p>Detection Modules</p>
+    </div>
+
+    <div class="status-box">
+        <h2>GPS</h2>
+        <p>Location Feature</p>
+    </div>
+
+    <div class="status-box">
+        <h2>SOS</h2>
+        <p>Emergency Response</p>
+    </div>
+</section>
+
+<section class="workflow">
+    <div class="section-title">
+        <p>PROJECT WORKFLOW</p>
+        <h2>How ResQNet AI Works</h2>
+    </div>
+
+    <div class="workflow-grid">
+        <div class="flow-card">
+            <div class="flow-number">01</div>
+            <h3>Signal Capture</h3>
+            <p>Receive available microphone or SOS input.</p>
+        </div>
+
+        <div class="flow-card">
+            <div class="flow-number">02</div>
+            <h3>Signal Analysis</h3>
+            <p>Analyze input for potential emergency indicators.</p>
+        </div>
+
+        <div class="flow-card">
+            <div class="flow-number">03</div>
+            <h3>Risk Assessment</h3>
+            <p>Evaluate signals before classifying a potential emergency.</p>
+        </div>
+
+        <div class="flow-card">
+            <div class="flow-number">04</div>
+            <h3>Alert Workflow</h3>
+            <p>Prepare an alert for configured emergency contacts.</p>
+        </div>
+    </div>
+</section>
+
+<section class="system-ready">
+    <div class="ready-card">
+        <div class="ready-left">
+            <p class="ready-label">RESQNET AI</p>
+            <h2>Ready to Get Started?</h2>
+            <p>Register to access your monitoring dashboard.</p>
+
+            <a href="{{ url_for('register') }}" class="primary-btn">
+                Start Monitoring
+            </a>
+        </div>
+
+        <div class="ready-right">
+            <div class="ready-circle">
+                <span>SETUP</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="footer-brand">
+        <div class="logo">
+            <span class="logo-dot"></span>
+            <h2>ResQNet AI</h2>
+        </div>
+
+        <p>AI-assisted emergency detection and response project.</p>
+    </div>
+
+    <div class="footer-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('features') }}">Features</a>
+        <a href="{{ url_for('about') }}">About</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 ResQNet AI • Major Project
+    </div>
+</footer>
+
+</body>
+</html>

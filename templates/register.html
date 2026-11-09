@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <title>Register | ResQNet AI</title>
+</head>
+
+<body>
+
+<section class="register-page">
+
+    <div class="register-card">
+
+        <h1>Create Your Safety Profile</h1>
+
+        <p>
+            Register once to enable Silent Emergency Detection
+            and faster rescue assistance.
+        </p>
+
+        <form method="POST" action="/register">
+
+    <input
+        type="text"
+        name="full_name"
+        placeholder="Full Name"
+        required
+    >
+
+    <input
+        type="tel"
+        name="phone"
+        placeholder="Phone Number"
+        required
+    >
+
+    <input
+        type="tel"
+        name="emergency_contact"
+        placeholder="Emergency Contact"
+        required
+    >
+
+    <button type="submit">
+        Continue
+    </button>
+
+</form>
+
+    </div>
+
+</section>
+
+</body>
+</html>

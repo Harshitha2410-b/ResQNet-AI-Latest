@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>About | ResQNet AI</title>
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="{{ url_for('home') }}" class="logo">
+        <span class="logo-dot"></span> ResQNet AI
+    </a>
+    <div class="nav-links">
+        <a href="{{ url_for('home') }}">Home</a>
+        <a href="{{ url_for('features') }}">Features</a>
+        <a href="{{ url_for('about') }}">About</a>
+        <a href="{{ url_for('contact') }}">Contact</a>
+    </div>
+    <a href="{{ url_for('register') }}" class="nav-cta">Start Monitoring</a>
+</nav>
+
+<section class="workflow">
+    <div class="section-title">
+        <p>ABOUT THE PROJECT</p>
+        <h2>About ResQNet AI</h2>
+    </div>
+
+    <div class="ready-card">
+        <div class="ready-left">
+            <h2>Technology for emergency awareness</h2>
+            <p>
+                ResQNet AI is a student project exploring voice analysis,
+                emergency triggers and location sharing to support faster
+                emergency response. Actual detection accuracy and alert
+                delivery depend on implemented and tested integrations.
+            </p>
+            <a href="{{ url_for('features') }}" class="primary-btn">Explore Features</a>
+        </div>
+    </div>
+</section>
+
+</body>
+</html>

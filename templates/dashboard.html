@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ResQNet AI | Monitoring Dashboard</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <script defer
+            src="{{ url_for('static', filename='js/app.js') }}">
+    </script>
+</head>
+
+<body>
+
+<section class="dashboard-page">
+
+    <!-- DASHBOARD HEADER -->
+    <div class="dashboard-header">
+        <h1>ResQNet AI</h1>
+        <p>Silent Emergency Monitoring</p>
+    </div>
+
+
+    <!-- MAIN MONITORING CARD -->
+    <div class="monitoring-card">
+
+        <div class="monitoring-status">
+            <span class="status-dot"></span>
+            SYSTEM READY
+        </div>
+
+        <h2>AI Monitoring</h2>
+
+        <p>
+            ResQNet AI monitors potential emergency situations
+            through voice detection, Silent SOS and fall detection.
+        </p>
+
+        <button class="monitor-btn" onclick="startMonitoring()">
+            Start Monitoring
+        </button>
+
+        <!-- AUDIO MONITOR -->
+        <div class="audio-monitor">
+
+            <div class="audio-header">
+                <span>LIVE AUDIO LEVEL</span>
+                <span id="audio-level-value">0%</span>
+            </div>
+
+            <div class="distress-counter">
+                <span>Potential Distress Signals</span>
+                <strong id="distress-count">0</strong>
+            </div>
+
+            <div class="audio-bar">
+                <div id="audio-level-bar"></div>
+            </div>
+
+            <p id="audio-status">
+                Waiting for microphone...
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- EMERGENCY DETECTION TRIGGERS -->
+    <div class="trigger-grid dashboard-triggers">
+
+        <!-- VOICE DETECTION -->
+        <div class="trigger-card">
+
+            <div class="trigger-icon">🎙️</div>
+
+            <h3>Voice Detection</h3>
+
+            <p>
+                AI analyzes distress voice, screams and
+                emergency phrases.
+            </p>
+
+            <span class="trigger-status">READY</span>
+
+        </div>
+
+
+        <!-- COMPLETE SILENT SOS -->
+        <div class="trigger-card sos-trigger-card"
+             id="sos-card">
+
+            <div class="trigger-icon">🆘</div>
+
+            <h3>Silent SOS</h3>
+
+            <p>
+                Tap the button three times within two seconds
+                to activate an emergency alert.
+            </p>
+
+            <button
+                type="button"
+                id="sos-button"
+                class="sos-button">
+
+                ACTIVATE SOS · 0/3
+
+            </button>
+
+            <p id="sos-status"
+               role="status"
+               aria-live="polite">
+
+                SOS inactive
+
+            </p>
+
+
+            <!-- SOS RESULT -->
+            <div id="sos-result" hidden>
+
+                <h3>Emergency Alert Details</h3>
+
+                <p>
+                    Alert ID:
+                    <strong id="sos-alert-id">-</strong>
+                </p>
+
+                <p>
+                    Activation Time:
+                    <span id="sos-time">-</span>
+                </p>
+
+                <p>
+                    GPS Location:
+                    <span id="sos-location">
+                        Waiting for location...
+                    </span>
+                </p>
+
+                <p>
+                    SMS Status:
+                    <strong id="sos-sms-status">PENDING</strong>
+                </p>
+
+                <p>
+                    Automatic Call Status:
+                    <strong id="sos-call-status">PENDING</strong>
+                </p>
+
+                <a
+                    id="sos-map"
+                    href="#"
+                    target="_blank"
+                    rel="noopener"
+                    hidden>
+
+                    View Location on Google Maps
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- FALL DETECTION -->
+        <div class="trigger-card" id="fall-card">
+
+            <div class="trigger-icon">🧍</div>
+
+            <h3>Fall Detection</h3>
+
+            <p>
+                Uses your device motion sensor to identify
+                a possible sudden fall.
+            </p>
+
+            <button
+                type="button"
+                id="fall-start-btn"
+                class="fall-button">
+
+                ENABLE FALL DETECTION
+
+            </button>
+
+            <span class="trigger-status"
+                  id="fall-status">
+
+                READY
+
+            </span>
+
+            <p id="fall-message"
+               role="status"
+               aria-live="polite">
+
+                Sensor not started.
+
+            </p>
+
+            <button
+                type="button"
+                id="fall-test-btn"
+                class="fall-button">
+
+                TEST FALL DETECTION
+
+            </button>
+
+            <button
+                type="button"
+                id="fall-reset-btn"
+                class="fall-button"
+                hidden>
+
+                RESET ALERT
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- MONITORING SUMMARY -->
+    <div class="monitor-summary">
+
+        <div class="summary-box">
+
+            <span class="summary-label">MONITORING</span>
+
+            <h3>AI Protection</h3>
+
+            <p>
+                System monitors potential emergency signals.
+            </p>
+
+        </div>
+
+
+        <div class="summary-box">
+
+            <span class="summary-label">LOCATION</span>
+
+            <h3>GPS Support</h3>
+
+            <p>
+                Location can be captured during SOS activation.
+            </p>
+
+        </div>
+
+
+        <div class="summary-box">
+
+            <span class="summary-label">RESPONSE</span>
+
+            <h3>Emergency Contact</h3>
+
+            <p>
+                SOS notifications can be sent to the registered
+                emergency contact when configured.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- SOS ALERT HISTORY -->
+    <div class="trigger-card alert-history">
+
+        <h2>🚨 Recent Emergency Alerts</h2>
+
+        <p>
+            Previously recorded SOS alerts.
+        </p>
+
+        <button
+            type="button"
+            id="refresh-alerts"
+            class="fall-button">
+
+            REFRESH ALERT HISTORY
+
+        </button>
+
+        <div id="alert-history-list"
+             aria-live="polite">
+
+            <p>Loading emergency alert history...</p>
+
+        </div>
+
+    </div>
+
+
+    <!-- SAFETY NOTICE -->
+    <p class="safety-notice">
+
+        ResQNet AI is a student project prototype.
+        SOS alerts depend on internet connectivity, GPS permissions
+        and configured notification services.
+        Always contact emergency services directly when needed.
+
+    </p>
+
+</section>
+
+</body>
+</html>
