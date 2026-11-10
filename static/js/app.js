@@ -1,8 +1,7 @@
-
 "use strict";
 
 // ==========================================
-// ResQNet AI - Complete Monitoring Application
+// RESQNET AI - COMPLETE MONITORING APP
 // ==========================================
 
 let microphoneStream = null;
@@ -24,17 +23,19 @@ function getElement(id) {
     return document.getElementById(id);
 }
 
-function setText(id, value) {
+function setText(id, text) {
     const element = getElement(id);
-    if (element) element.textContent = value;
+    if (element) element.textContent = text;
 }
 
-function setMonitoringStatus(value) {
+function setMonitoringStatus(text) {
     const status = document.querySelector(".monitoring-status");
 
     if (status) {
-        status.innerHTML =
-            `<span class="status-dot"></span>${value}`;
+        status.innerHTML = `
+            <span class="status-dot"></span>
+            ${text}
+        `;
     }
 }
 
@@ -43,7 +44,7 @@ function updateDistressCount() {
 }
 
 // ==========================================
-// START MONITORING
+// START VOICE MONITORING
 // ==========================================
 
 async function startMonitoring() {
@@ -52,7 +53,7 @@ async function startMonitoring() {
     const button = document.querySelector(".monitor-btn");
 
     if (!navigator.mediaDevices?.getUserMedia) {
-        alert("Microphone access requires localhost or HTTPS.");
+        alert("Microphone access requires HTTPS or localhost.");
         return;
     }
 
@@ -65,7 +66,8 @@ async function startMonitoring() {
         microphoneStream = await navigator.mediaDevices.getUserMedia({
             audio: {
                 echoCancellation: true,
-                noiseSuppression: true
+                noiseSuppression: true,
+                autoGainControl: false
             }
         });
 
@@ -73,7 +75,7 @@ async function startMonitoring() {
             window.AudioContext || window.webkitAudioContext;
 
         if (!AudioContextClass) {
-            throw new Error("AudioContext is unsupported.");
+            throw new Error("AudioContext is not supported.");
         }
 
         audioContext = new AudioContextClass();
@@ -100,26 +102,25 @@ async function startMonitoring() {
         setText("audio-status", "Listening for audio...");
 
         if (button) {
-            button.disabled = false;
             button.textContent = "Stop Monitoring";
+            button.disabled = false;
             button.onclick = stopMonitoring;
         }
 
         monitorAudioLevel();
         startVoiceRecognition();
 
-        console.log("ResQNet AI monitoring started.");
-
     } catch (error) {
         console.error("Microphone error:", error);
+
         stopAudioResources();
 
         setMonitoringStatus("SYSTEM READY");
         setText("audio-status", "Microphone unavailable.");
 
         if (button) {
-            button.disabled = false;
             button.textContent = "Start Monitoring";
+            button.disabled = false;
             button.onclick = startMonitoring;
         }
 
@@ -128,7 +129,7 @@ async function startMonitoring() {
 }
 
 // ==========================================
-// STOP MONITORING
+// STOP VOICE MONITORING
 // ==========================================
 
 function stopMonitoring() {
@@ -163,8 +164,8 @@ function stopMonitoring() {
     const button = document.querySelector(".monitor-btn");
 
     if (button) {
-        button.disabled = false;
         button.textContent = "Start Monitoring";
+        button.disabled = false;
         button.onclick = startMonitoring;
     }
 }
@@ -210,16 +211,16 @@ function monitorAudioLevel() {
         }
 
         const rms = Math.sqrt(sum / data.length);
-        const percentage = Math.min(Math.round(rms * 500), 100);
+        const percent = Math.min(Math.round(rms * 500), 100);
 
-        setText("audio-level-value", percentage + "%");
+        setText("audio-level-value", percent + "%");
 
         const bar = getElement("audio-level-bar");
-        if (bar) bar.style.width = percentage + "%";
+        if (bar) bar.style.width = percent + "%";
 
-        if (percentage < 10) {
+        if (percent < 10) {
             setText("audio-status", "Listening for audio...");
-        } else if (percentage < 50) {
+        } else if (percent < 50) {
             setText("audio-status", "Audio detected");
         } else {
             setText("audio-status", "Loud audio detected");
@@ -232,7 +233,7 @@ function monitorAudioLevel() {
 }
 
 // ==========================================
-// VOICE RECOGNITION
+// SPEECH RECOGNITION
 // ==========================================
 
 function startVoiceRecognition() {
@@ -265,6 +266,7 @@ function startVoiceRecognition() {
                 event.results[i][0].transcript.toLowerCase().trim();
 
             console.log("Recognized speech:", transcript);
+
             setText("audio-status", `Speech detected: "${transcript}"`);
 
             checkEmergencyKeywords(transcript);
@@ -284,7 +286,7 @@ function startVoiceRecognition() {
             try {
                 recognition.start();
             } catch (error) {
-                console.warn("Speech recognition restart failed.");
+                console.warn("Could not restart speech recognition.");
             }
         }
     };
@@ -292,12 +294,12 @@ function startVoiceRecognition() {
     try {
         recognition.start();
     } catch (error) {
-        console.warn("Speech recognition could not start:", error);
+        console.warn("Could not start speech recognition:", error);
     }
 }
 
 // ==========================================
-// EMERGENCY KEYWORD DEMO
+// EMERGENCY KEYWORD DETECTION
 // ==========================================
 
 function checkEmergencyKeywords(transcript) {
@@ -311,9 +313,11 @@ function checkEmergencyKeywords(transcript) {
     ];
 
     const match = phrases.find(phrase => transcript.includes(phrase));
+
     if (!match) return;
 
     const now = Date.now();
+
     if (now - lastDistressTime < 10000) return;
 
     lastDistressTime = now;
@@ -326,7 +330,7 @@ function checkEmergencyKeywords(transcript) {
         `Potential distress phrase recognized: "${match}"`
     );
 
-    console.warn("Potential distress phrase:", match);
+    console.warn("Potential distress phrase detected:", match);
 }
 
 // ==========================================
@@ -343,6 +347,7 @@ function initializeSilentSOS() {
     const mapLink = getElement("sos-map");
 
     if (!button || button.dataset.initialized === "true") return;
+
     button.dataset.initialized = "true";
 
     let taps = 0;
@@ -352,7 +357,10 @@ function initializeSilentSOS() {
         if (sosRequestInProgress) return;
 
         taps++;
-        if (status) status.textContent = `SOS activation: ${taps}/3`;
+
+        if (status) {
+            status.textContent = `SOS activation: ${taps}/3`;
+        }
 
         clearTimeout(timer);
 
@@ -361,27 +369,31 @@ function initializeSilentSOS() {
                 taps = 0;
                 if (status) status.textContent = "SOS inactive";
             }, 2000);
+
             return;
         }
 
         taps = 0;
         sosRequestInProgress = true;
+
         button.disabled = true;
         button.textContent = "ACTIVATING SOS";
 
         if (result) result.hidden = false;
 
         if (timeElement) {
-            timeElement.textContent = "Activated: " + new Date().toLocaleString();
+            timeElement.textContent =
+                "Activated: " + new Date().toLocaleString();
         }
 
         if (locationElement) {
             locationElement.textContent = "Getting GPS location...";
         }
 
-        // First get GPS location.
         let latitude = null;
         let longitude = null;
+
+        // GET GPS LOCATION
 
         if (navigator.geolocation) {
             try {
@@ -408,22 +420,28 @@ function initializeSilentSOS() {
                 if (mapLink) {
                     mapLink.href =
                         `https://www.google.com/maps?q=${latitude},${longitude}`;
+
                     mapLink.hidden = false;
                 }
+
             } catch (error) {
                 console.warn("GPS unavailable:", error.message);
 
                 if (locationElement) {
                     locationElement.textContent =
-                        "GPS unavailable. Alert will be sent without location.";
+                        "GPS unavailable. Sending alert without location.";
                 }
             }
-        } else if (locationElement) {
-            locationElement.textContent = "GPS not supported by this browser.";
+        } else {
+            if (locationElement) {
+                locationElement.textContent =
+                    "GPS is not supported by this browser.";
+            }
         }
 
-        // Send SOS and GPS to Flask backend.
         try {
+            // SAVE SOS ALERT TO SERVER
+
             const response = await fetch("/api/sos", {
                 method: "POST",
                 headers: {
@@ -443,7 +461,8 @@ function initializeSilentSOS() {
             }
 
             if (status) {
-                status.textContent = `SOS recorded. Alert ID: ${data.alert_id}`;
+                status.textContent =
+                    `SOS recorded. Alert ID: ${data.alert_id}`;
             }
 
             if (triggerStatus) {
@@ -453,19 +472,43 @@ function initializeSilentSOS() {
             button.textContent = "SOS RECORDED";
 
             setText("sos-alert-id", data.alert_id ?? "Not provided");
-            setText("sos-sms-status", data.sms_status ?? "Not available");
-            setText("sos-call-status", data.call_status ?? "Not available");
+            setText("sos-sms-status", "Awaiting user confirmation");
+            setText("sos-call-status", "Awaiting user confirmation");
 
-            await loadSOSHistory();
+            // CREATE SMS AND CALL OPTIONS
+
+            const contact = data.emergency_contact;
+
+            if (contact) {
+                createSOSPhoneActions(
+                    result,
+                    contact,
+                    data.alert_id,
+                    latitude,
+                    longitude
+                );
+            } else {
+                if (status) {
+                    status.textContent =
+                        "SOS saved, but emergency contact was not received.";
+                }
+            }
+
+            // REFRESH ALERT HISTORY
+
+            if (typeof loadSOSHistory === "function") {
+                await loadSOSHistory();
+            }
 
         } catch (error) {
             console.error("SOS request failed:", error);
 
             if (status) {
-                status.textContent = "SOS could not be saved: " + error.message;
+                status.textContent = "SOS error: " + error.message;
             }
 
             button.textContent = "RETRY SOS";
+
         } finally {
             button.disabled = false;
             sosRequestInProgress = false;
@@ -473,63 +516,85 @@ function initializeSilentSOS() {
     });
 }
 
-async function loadSOSHistory() {
-    const historyList = getElement("alert-history-list");
-    if (!historyList) return;
+// ==========================================
+// CREATE ANDROID SMS AND PHONE BUTTONS
+// ==========================================
 
-    historyList.textContent = "Loading alerts...";
+function createSOSPhoneActions(
+    result,
+    contact,
+    alertId,
+    latitude,
+    longitude
+) {
+    if (!result) return;
 
-    try {
-        const response = await fetch("/api/alerts");
-        if (!response.ok) {
-            throw new Error("Unable to load alert history.");
-        }
+    const oldActions = getElement("sos-phone-actions");
 
-        const data = await response.json();
-        const alerts = Array.isArray(data) ? data : (data.alerts || []);
+    if (oldActions) oldActions.remove();
 
-        historyList.replaceChildren();
+    const message =
+        `RESQNET AI EMERGENCY ALERT\n` +
+        `Possible emergency detected.\n` +
+        `Alert ID: ${alertId}\n` +
+        `Location: ${
+            latitude !== null && longitude !== null
+                ? `https://www.google.com/maps?q=${latitude},${longitude}`
+                : "Unavailable"
+        }\n` +
+        `Please contact me immediately.`;
 
-        if (alerts.length === 0) {
-            historyList.textContent = "No emergency alerts recorded yet.";
-            return;
-        }
+    const actions = document.createElement("div");
 
-        alerts.forEach(alert => {
-            const item = document.createElement("div");
-            item.className = "alert-history-item";
+    actions.id = "sos-phone-actions";
+    actions.style.display = "flex";
+    actions.style.flexWrap = "wrap";
+    actions.style.gap = "12px";
+    actions.style.marginTop = "15px";
 
-            const heading = document.createElement("h4");
-            heading.textContent =
-                `Alert #${alert.id} - ${alert.alert_type || "SOS"}`;
+    // SMS BUTTON
 
-            const date = document.createElement("p");
-            date.textContent = `Time: ${alert.created_at || "Not available"}`;
+    const smsButton = document.createElement("a");
 
-            const sms = document.createElement("p");
-            sms.textContent = `SMS: ${alert.sms_status || "Not available"}`;
+    smsButton.textContent = "OPEN SMS APP";
+    smsButton.href =
+        `sms:${contact}?body=${encodeURIComponent(message)}`;
 
-            const call = document.createElement("p");
-            call.textContent = `Call: ${alert.call_status || "Not available"}`;
+    smsButton.style.padding = "12px 18px";
+    smsButton.style.background = "#198754";
+    smsButton.style.color = "white";
+    smsButton.style.borderRadius = "8px";
+    smsButton.style.textDecoration = "none";
+    smsButton.style.display = "inline-block";
 
-            item.append(heading, date, sms, call);
+    // PHONE BUTTON
 
-            if (alert.latitude != null && alert.longitude != null) {
-                const map = document.createElement("a");
-                map.href = `https://www.google.com/maps?q=${alert.latitude},${alert.longitude}`;
-                map.target = "_blank";
-                map.rel = "noopener noreferrer";
-                map.textContent = "View location";
-                item.appendChild(map);
-            }
+    const callButton = document.createElement("a");
 
-            historyList.appendChild(item);
-        });
+    callButton.textContent = "OPEN PHONE DIALER";
+    callButton.href = `tel:${contact}`;
 
-    } catch (error) {
-        console.error("Alert history error:", error);
-        historyList.textContent = "Could not load alert history.";
-    }
+    callButton.style.padding = "12px 18px";
+    callButton.style.background = "#0d6efd";
+    callButton.style.color = "white";
+    callButton.style.borderRadius = "8px";
+    callButton.style.textDecoration = "none";
+    callButton.style.display = "inline-block";
+
+    // DISCLAIMER
+
+    const note = document.createElement("p");
+
+    note.textContent =
+        "Press Send in SMS app or Call in Phone app to confirm. " +
+        "No message or call is sent automatically.";
+
+    note.style.width = "100%";
+    note.style.fontSize = "13px";
+
+    actions.append(smsButton, callButton, note);
+
+    result.appendChild(actions);
 }
 
 // ==========================================
@@ -542,12 +607,10 @@ function initializeFallDetection() {
     const status = getElement("fall-status");
     const message = getElement("fall-message");
 
-    if (!startButton || !status || !message) {
-        console.warn("Fall detection HTML elements are missing.");
-        return;
-    }
+    if (!startButton || !status || !message) return;
 
     if (startButton.dataset.initialized === "true") return;
+
     startButton.dataset.initialized = "true";
 
     let active = false;
@@ -561,37 +624,54 @@ function initializeFallDetection() {
     const QUIET_THRESHOLD = 13;
     const COOLDOWN = 10000;
 
-    // Create the test button only if it doesn't already exist.
-    let testButton = getElement("fall-test-btn");
+    // FALL TEST BUTTON
 
-    if (!testButton) {
-        testButton = document.createElement("button");
-        testButton.id = "fall-test-btn";
-        testButton.type = "button";
-        testButton.textContent = "TEST FALL DETECTION";
-        testButton.className = "fall-button";
-        testButton.style.marginTop = "10px";
+    const simulateButton = document.createElement("button");
 
-        startButton.insertAdjacentElement("afterend", testButton);
-    }
+    simulateButton.type = "button";
+    simulateButton.textContent = "TEST FALL DETECTION";
+    simulateButton.className = "fall-button";
+    simulateButton.style.marginTop = "10px";
 
-    // Hide Reset Alert initially.
-    if (resetButton) {
-        resetButton.hidden = true;
-        resetButton.style.display = "none";
-    }
+    startButton.insertAdjacentElement("afterend", simulateButton);
 
-    // Enable actual motion sensor monitoring.
+    simulateButton.addEventListener("click", () => {
+        if (alertPending) {
+            message.textContent =
+                "Reset the previous alert before testing again.";
+            return;
+        }
+
+        if (testTimer) clearTimeout(testTimer);
+
+        status.textContent = "TESTING";
+        message.textContent =
+            "Simulating a fall event for demonstration...";
+
+        simulateButton.disabled = true;
+
+        testTimer = setTimeout(() => {
+            testTimer = null;
+            simulateButton.disabled = false;
+            showPossibleFall();
+        }, 1000);
+    });
+
+    // ENABLE DEVICE MOTION
+
     async function enableFallDetection() {
         if (!("DeviceMotionEvent" in window)) {
             status.textContent = "UNAVAILABLE";
             message.textContent =
-                "This browser does not support motion sensors.";
+                "This browser does not support device motion.";
+
             return;
         }
 
         try {
-            if (typeof DeviceMotionEvent.requestPermission === "function") {
+            if (
+                typeof DeviceMotionEvent.requestPermission === "function"
+            ) {
                 const permission =
                     await DeviceMotionEvent.requestPermission();
 
@@ -604,35 +684,37 @@ function initializeFallDetection() {
             window.addEventListener("devicemotion", onMotion);
 
             active = true;
-            sensorEvents = 0;
 
             startButton.disabled = true;
             startButton.textContent = "FALL DETECTION ACTIVE";
 
             status.textContent = "ACTIVE";
-            message.textContent = "Waiting for motion sensor readings...";
+            message.textContent =
+                "Waiting for device motion sensor readings...";
 
             setTimeout(() => {
-                if (active && sensorEvents === 0 && !alertPending) {
+                if (active && sensorEvents === 0) {
                     status.textContent = "NO SENSOR DATA";
+
                     message.textContent =
-                        "No usable motion data received. Try a compatible mobile device.";
+                        "No motion data received. Try a compatible mobile device.";
                 }
             }, 5000);
 
         } catch (error) {
-            console.error("Fall sensor setup failed:", error);
+            console.error("Fall detection setup error:", error);
 
             status.textContent = "PERMISSION ERROR";
             message.textContent =
-                "Motion sensor permission denied or unavailable.";
+                "Motion sensor access denied or unavailable.";
 
             startButton.disabled = false;
             startButton.textContent = "ENABLE FALL DETECTION";
         }
     }
 
-    // Process real device motion data.
+    // MOTION SENSOR EVENT
+
     function onMotion(event) {
         if (!active || alertPending) return;
 
@@ -645,6 +727,7 @@ function initializeFallDetection() {
             event.acceleration.z != null
         ) {
             ({ x, y, z } = event.acceleration);
+
         } else if (
             event.accelerationIncludingGravity &&
             event.accelerationIncludingGravity.x != null &&
@@ -652,6 +735,7 @@ function initializeFallDetection() {
             event.accelerationIncludingGravity.z != null
         ) {
             ({ x, y, z } = event.accelerationIncludingGravity);
+
         } else {
             return;
         }
@@ -663,8 +747,10 @@ function initializeFallDetection() {
 
         if (magnitude >= IMPACT_THRESHOLD) {
             impactTime = now;
+
             message.textContent =
                 "Sudden movement detected. Checking motion...";
+
             return;
         }
 
@@ -677,6 +763,7 @@ function initializeFallDetection() {
         ) {
             impactTime = 0;
             lastAlertTime = now;
+
             showPossibleFall();
             return;
         }
@@ -687,79 +774,50 @@ function initializeFallDetection() {
         }
     }
 
-    // Shared handler for both simulated and real sensor events.
-    function showPossibleFall() {
-        if (alertPending) return;
+    // POSSIBLE FALL ALERT
 
+    function showPossibleFall() {
         alertPending = true;
 
         status.textContent = "CHECK REQUIRED";
+
         message.textContent =
-            "Possible fall detected. Please check the person.";
+            "Possible fall detected. Please check the person or contact a trusted person.";
 
         if (resetButton) {
             resetButton.hidden = false;
-            resetButton.style.display = "inline-flex";
             resetButton.disabled = false;
             resetButton.textContent = "RESET ALERT";
         }
 
-        // The dashboard updates even if the user dismisses the popup.
-        const personOkay = window.confirm(
+        const okay = window.confirm(
             "Possible fall-like movement detected.\n\n" +
             "Press OK if the person is okay. " +
             "Press Cancel if help may be needed."
         );
 
-        if (personOkay) {
+        if (okay) {
             alertPending = false;
+
             status.textContent = active ? "ACTIVE" : "READY";
             message.textContent = active
                 ? "Monitoring motion..."
                 : "Sensor not started.";
 
-            if (resetButton) {
-                resetButton.hidden = true;
-                resetButton.style.display = "none";
-            }
-        } else {
-            // Cancel means further checking may be needed.
-            status.textContent = "CHECK REQUIRED";
-            message.textContent =
-                "Please check the person or contact a trusted person. " +
-                "No SMS or emergency notification was sent.";
+            if (resetButton) resetButton.hidden = true;
 
-            if (resetButton) {
-                resetButton.hidden = false;
-                resetButton.style.display = "inline-flex";
-            }
+        } else {
+            status.textContent = "CHECK REQUIRED";
+
+            message.textContent =
+                "Please check the person. No SMS or emergency notification has been sent.";
+
+            if (resetButton) resetButton.hidden = false;
         }
     }
 
-    // Simulation button for project demonstration only.
-    testButton.addEventListener("click", () => {
-        if (alertPending) {
-            message.textContent =
-                "Reset the previous alert before running another test.";
-            return;
-        }
+    // RESET FALL ALERT
 
-        if (testTimer) clearTimeout(testTimer);
-
-        status.textContent = "TESTING";
-        message.textContent =
-            "Simulating a fall event for demonstration...";
-
-        testButton.disabled = true;
-
-        testTimer = setTimeout(() => {
-            testTimer = null;
-            testButton.disabled = false;
-            showPossibleFall();
-        }, 1000);
-    });
-
-    // Reset handler: this was missing from the uploaded code.
     if (resetButton) {
         resetButton.addEventListener("click", () => {
             alertPending = false;
@@ -777,7 +835,6 @@ function initializeFallDetection() {
                 : "Sensor not started.";
 
             resetButton.hidden = true;
-            resetButton.style.display = "none";
 
             console.log("Fall alert reset.");
         });
@@ -800,11 +857,5 @@ document.addEventListener("DOMContentLoaded", () => {
     initializeSilentSOS();
     initializeFallDetection();
 
-    loadSOSHistory();
-
-    const refreshButton = getElement("refresh-alerts");
-
-    if (refreshButton) {
-        refreshButton.addEventListener("click", loadSOSHistory);
-    }
+    console.log("ResQNet AI initialized.");
 });
