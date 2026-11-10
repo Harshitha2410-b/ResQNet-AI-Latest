@@ -373,6 +373,7 @@ def create_sos():
     return jsonify({
         "success": True,
         "alert_id": alert.id,
+        "emergency_contact": contact,
         "message": "SOS alert recorded.",
         "latitude": latitude,
         "longitude": longitude,
