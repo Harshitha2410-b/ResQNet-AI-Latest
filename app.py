@@ -7,13 +7,16 @@ from flask import (
     Flask, render_template, request,
     redirect, url_for, flash, jsonify
 )
+
 from extensions import db
+
 
 # =====================================
 # APPLICATION CONFIGURATION
 # =====================================
 
 app = Flask(__name__)
+
 app.config["SECRET_KEY"] = os.environ.get(
     "RESQNET_SECRET", "resqnet-dev-key"
 )
@@ -32,6 +35,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
 from models.user import User
+
 
 # =====================================
 # SOS ALERT DATABASE MODEL
@@ -52,7 +56,16 @@ class Alert(db.Model):
 
 
 # =====================================
-# TWILIO CONFIGURATION
+# CREATE DATABASE TABLES
+# IMPORTANT: Works with Gunicorn too
+# =====================================
+
+with app.app_context():
+    db.create_all()
+
+
+# =====================================
+# TWILIO CONFIGURATION (OPTIONAL)
 # =====================================
 
 TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID")
@@ -77,12 +90,11 @@ def get_twilio_client():
 
 
 def normalize_phone(phone):
-    """
-    Convert Indian 10-digit numbers to +91 format.
-    International numbers should already include country code.
-    """
+    """Convert Indian 10-digit numbers to +91 format."""
+
     phone = "".join(
-        char for char in str(phone) if char.isdigit() or char == "+"
+        char for char in str(phone)
+        if char.isdigit() or char == "+"
     )
 
     if phone.startswith("+"):
@@ -100,6 +112,7 @@ def normalize_phone(phone):
 
 
 def send_sos_sms(client, contact, alert):
+
     maps_link = ""
 
     if alert.latitude is not None and alert.longitude is not None:
@@ -125,6 +138,7 @@ def send_sos_sms(client, contact, alert):
 
 
 def make_sos_call(client, contact, alert):
+
     location_text = "Location is unavailable."
 
     if alert.latitude is not None and alert.longitude is not None:
@@ -141,7 +155,6 @@ def make_sos_call(client, contact, alert):
         + location_text
     )
 
-    # Escape text before inserting it into TwiML.
     twiml = (
         "<Response><Say language='en-IN'>"
         + escape(spoken_message)
@@ -230,12 +243,22 @@ def register():
             emergency_contact=emergency_contact
         )
 
-        db.session.add(new_user)
-        db.session.commit()
+        try:
+            db.session.add(new_user)
+            db.session.commit()
 
-        flash("Registration successful!", "success")
+            flash("Registration successful!", "success")
+            return redirect(url_for("dashboard"))
 
-        return redirect(url_for("dashboard"))
+        except Exception:
+            db.session.rollback()
+            app.logger.exception("Registration failed")
+
+            flash(
+                "Registration failed. Please try again.",
+                "error"
+            )
+            return redirect(url_for("register"))
 
     return render_template("register.html")
 
@@ -256,6 +279,7 @@ def create_sos():
         latitude = (
             float(latitude) if latitude is not None else None
         )
+
         longitude = (
             float(longitude) if longitude is not None else None
         )
@@ -272,7 +296,6 @@ def create_sos():
             "error": "Invalid GPS coordinates."
         }), 400
 
-    # Get the latest registered user's emergency contact.
     user = User.query.order_by(User.id.desc()).first()
 
     if not user:
@@ -283,13 +306,13 @@ def create_sos():
 
     try:
         contact = normalize_phone(user.emergency_contact)
+
     except ValueError as error:
         return jsonify({
             "success": False,
             "error": str(error)
         }), 400
 
-    # Save alert FIRST. Even if Twilio fails, the alert remains saved.
     alert = Alert(
         alert_type="SILENT SOS",
         source=data.get("source", "Dashboard"),
@@ -300,8 +323,18 @@ def create_sos():
         call_status="PENDING"
     )
 
-    db.session.add(alert)
-    db.session.commit()
+    try:
+        db.session.add(alert)
+        db.session.commit()
+
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Could not save SOS alert")
+
+        return jsonify({
+            "success": False,
+            "error": "Could not save SOS alert."
+        }), 500
 
     sms_status = "NOT CONFIGURED"
     call_status = "NOT CONFIGURED"
@@ -309,36 +342,33 @@ def create_sos():
     try:
         client = get_twilio_client()
 
-        if client is None:
-            sms_status = "NOT CONFIGURED"
-            call_status = "NOT CONFIGURED"
+        if client is not None:
 
-        else:
             try:
                 sms = send_sos_sms(client, contact, alert)
                 sms_status = "SENT"
-                print("SOS SMS SID:", sms.sid)
+                app.logger.info("SOS SMS SID: %s", sms.sid)
 
-            except Exception as error:
+            except Exception:
                 sms_status = "FAILED"
-                app.logger.exception("SOS SMS failed: %s", error)
+                app.logger.exception("SOS SMS failed")
 
             try:
                 call = make_sos_call(client, contact, alert)
                 call_status = "INITIATED"
-                print("SOS CALL SID:", call.sid)
+                app.logger.info("SOS CALL SID: %s", call.sid)
 
-            except Exception as error:
+            except Exception:
                 call_status = "FAILED"
-                app.logger.exception("SOS call failed: %s", error)
+                app.logger.exception("SOS call failed")
 
         alert.sms_status = sms_status
         alert.call_status = call_status
         db.session.commit()
 
-    except Exception as error:
+    except Exception:
         db.session.rollback()
-        app.logger.exception("SOS notification setup failed: %s", error)
+        app.logger.exception("SOS notification setup failed")
 
     return jsonify({
         "success": True,
@@ -365,16 +395,16 @@ def alert_history():
 
     return jsonify([
         {
-            "id": a.id,
-            "type": a.alert_type,
-            "source": a.source,
-            "latitude": a.latitude,
-            "longitude": a.longitude,
-            "sms_status": a.sms_status,
-            "call_status": a.call_status,
-            "created_at": a.created_at.isoformat()
+            "id": alert.id,
+            "type": alert.alert_type,
+            "source": alert.source,
+            "latitude": alert.latitude,
+            "longitude": alert.longitude,
+            "sms_status": alert.sms_status,
+            "call_status": alert.call_status,
+            "created_at": alert.created_at.isoformat()
         }
-        for a in alerts
+        for alert in alerts
     ])
 
 
@@ -384,6 +414,7 @@ def alert_history():
 
 @app.route("/health")
 def health():
+
     return jsonify({
         "status": "running",
         "application": "ResQNet AI"
